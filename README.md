@@ -17,11 +17,13 @@ In the SwiftData data service:
 protocol DataServiceProtocol: ModelActor {
     associatedtype Model: PersistentModel
     associatedtype ViewModel: Sendable
-    func fetchDataIds(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier]
+    func fetchDataIds(  predicate: Predicate<Model>?, 
+                        sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier]
 }
 
 extension DataServiceProtocol {
-    func fetchDataIds(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier] {
+    func fetchDataIds(  predicate: Predicate<Model>?, 
+                        sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier] {
         let fetchDescriptor = FetchDescriptor<Model>(predicate: predicate, sortBy: sortBy)
         let list: [Model] = try modelContext.fetch(fetchDescriptor)
         return list.map({ $0.id })
