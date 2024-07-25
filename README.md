@@ -9,7 +9,7 @@ How to create a SwiftUI app where SwiftData operations run on background threads
 ### Crossing actor boundaries
 This sample code approaches the problem with two solutions:
 
-#### 1) PersistentIdentifier
+#### Approach 1 PersistentIdentifier
 Background actor sends SwiftData model IDs (`PersistentIdentifier`) to the main actor to be reconstituted in that context. 
 In the SwiftData data service:
 
@@ -49,19 +49,20 @@ Then in the viewModel class:
     }
 ```
 
-#### 2) Sendable Mirror object
+#### Approach 2 Sendable Mirror object
 Background actor sends `Sendable` objects mirroring the @Model classes.  
 
 ```swift
 
 @Model final class Item { // fields }
 
-@Observable final class ItemViewModel: Sendable, Identifiable, Hashable { // same field as Item } 
+@Observable final class ItemViewModel: Sendable, Identifiable, Hashable { // same fields } 
 
 @ModelActor actor DataService<Model> where Model : PersistentModel {}
 
 extension DataService: DataServiceProtocol {
-    func fetchData(predicate: Predicate<Item>?, sortBy: [SortDescriptor<Item>]) async throws -> [ItemViewModel] {
+    func fetchData(predicate: Predicate<Item>?, 
+                    sortBy: [SortDescriptor<Item>]) async throws -> [ItemViewModel] {
         let fetchDescriptor = FetchDescriptor<Item>(predicate: predicate, sortBy: sortBy)
         let list: [Item] = try modelContext.fetch(fetchDescriptor)
         return list.map({ $0.viewModel })
