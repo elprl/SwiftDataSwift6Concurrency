@@ -7,11 +7,6 @@
 
 import Foundation
 
-protocol ConvertableViewModelProtocol: Sendable {
-    associatedtype Model: ConvertablePersistentModelProtocol
-    var model: Model { get }
-}
-
 @Observable
 final class ItemViewModel: Sendable {
     let messageId: String

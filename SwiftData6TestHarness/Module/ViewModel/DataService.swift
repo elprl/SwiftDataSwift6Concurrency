@@ -8,6 +8,16 @@
 import Foundation
 import SwiftData
 
+protocol ConvertablePersistentModelProtocol: PersistentModel {
+    associatedtype ViewModel: Sendable
+    var viewModel: ViewModel { get }
+}
+
+protocol ConvertableViewModelProtocol: Sendable {
+    associatedtype Model: ConvertablePersistentModelProtocol
+    var model: Model { get }
+}
+
 protocol DataServiceProtocol: ModelActor {
     associatedtype Model: ConvertablePersistentModelProtocol
     func insert(data: Model) async

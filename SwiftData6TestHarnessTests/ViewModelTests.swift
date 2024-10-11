@@ -48,7 +48,7 @@ struct ViewModelTests {
 
         let sut = ContentViewModel(modelContext: container.mainContext)
         let date = Date.now
-        await sut.addItem(message: "Message 1")
+        await sut.addItem(message: "Message 1", timestamp: date)
 
         #expect(sut.items.count == 1)
         #expect(sut.items.first?.timestamp == date)

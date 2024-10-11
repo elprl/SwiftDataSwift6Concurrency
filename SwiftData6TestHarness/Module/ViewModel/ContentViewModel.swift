@@ -21,11 +21,11 @@ final class ContentViewModel {
     }
     
     @MainActor
-    func addItem(message: String) async {
+    func addItem(message: String, timestamp: Date = Date.now) async {
         guard let container = modelContext?.container else { return }
         let task = Task.detached {
             let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
-            await dataService.insert(data: ItemViewModel(id: UUID().uuidString, message: message, timestamp: Date.now))
+            await dataService.insert(data: ItemViewModel(id: UUID().uuidString, message: message, timestamp: timestamp))
         }
         await task.value
         await fetchData()

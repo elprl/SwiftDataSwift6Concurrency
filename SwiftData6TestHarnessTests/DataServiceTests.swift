@@ -22,9 +22,9 @@ struct DataServiceTests {
             container.mainContext.insert(user)
         }
         try? container.mainContext.save()
-        let sut = DataService<Item>(modelContainer: container)
+        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
         do {
-            let items = try await sut.fetchData(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
+            let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.count == count)
         } catch {
             assertionFailure("Fetch error thrown")
@@ -38,10 +38,10 @@ struct DataServiceTests {
         let user = Item(id: "\(1)", message: "Message \(1)")
         container.mainContext.insert(user)
         try? container.mainContext.save()
-        let sut = DataService<Item>(modelContainer: container)
+        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
         do {
             await sut.remove(id: user.id)
-            let items = try await sut.fetchData(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
+            let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.isEmpty)
         } catch {
             assertionFailure("Fetch error thrown")
@@ -55,11 +55,11 @@ struct DataServiceTests {
         let user = Item(id: "\(1)", message: "Message \(1)")
         container.mainContext.insert(user)
         try? container.mainContext.save()
-        let sut = DataService<Item>(modelContainer: container)
+        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
         do {
             let t = user.timestamp
             try await sut.remove(predicate: #Predicate{ $0.timestamp == t })
-            let items = try await sut.fetchData(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
+            let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.isEmpty)
         } catch {
             assertionFailure("Fetch error thrown")
@@ -70,11 +70,11 @@ struct DataServiceTests {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Item.self, configurations: config)
 
-        let sut = DataService<Item>(modelContainer: container)
+        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
         do {
             let date = Date.now
-            await sut.insert(data: ItemViewModel(message: "Hello World"))
-            let items = try await sut.fetchData(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
+            await sut.insert(data: ItemViewModel(message: "Hello World", timestamp: date))
+            let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.count == 1)
             #expect(items.first?.timestamp == date)
         } catch {

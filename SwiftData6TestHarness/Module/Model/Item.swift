@@ -8,11 +8,6 @@
 import Foundation
 import SwiftData
 
-protocol ConvertablePersistentModelProtocol: PersistentModel {
-    associatedtype ViewModel: Sendable
-    var viewModel: ViewModel { get }
-}
-
 @Model
 final class Item {
     @Attribute(.unique) var messageId: String
