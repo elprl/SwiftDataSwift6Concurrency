@@ -4,7 +4,7 @@ An iOS app test harness for exploring strict concurrency with SwiftData and Swif
 
 ## Challenges
 
-How to create a SwiftUI app where SwiftData operations run on background threads and eventually update SwiftUI views on the main actor as required - while dealing with cross actor boundary challenges.
+How to create a SwiftUI MVVM app where SwiftData operations run on background threads and eventually update SwiftUI views on the main actor as required - while dealing with cross actor boundary challenges.
 
 ### Crossing actor boundaries
 This sample code approaches the problem with two solutions:

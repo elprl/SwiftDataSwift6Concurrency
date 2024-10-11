@@ -24,7 +24,7 @@ final class ContentViewModel {
     func addItem(message: String) async {
         guard let container = modelContext?.container else { return }
         let task = Task.detached {
-            let dataService = DataService<Item>(modelContainer: container)
+            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
             await dataService.insert(data: ItemViewModel(id: UUID().uuidString, message: message, timestamp: Date.now))
         }
         await task.value
@@ -36,7 +36,7 @@ final class ContentViewModel {
         guard let container = modelContext?.container else { return }
         let delItems = offsets.compactMap({ items[safe: $0] })
         let task = Task.detached {
-            let dataService = DataService<Item>(modelContainer: container)
+            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
             do {
                 for item in delItems {
                     let t = item.timestamp
@@ -54,7 +54,7 @@ final class ContentViewModel {
     func fetchDataByIds() async {
         guard let container = modelContext?.container else { return }
         let itemIds: [PersistentIdentifier] = await Task.detached {
-            let dataService = DataService<Item>(modelContainer: container)
+            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
             if let itemIds: [PersistentIdentifier] = try? await dataService.fetchDataIds(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
                 return itemIds
             }
@@ -70,8 +70,8 @@ final class ContentViewModel {
     func fetchData() async {
         guard let container = modelContext?.container else { return }
         let vmItems: [ItemViewModel] = await Task.detached {
-            let dataService = DataService<Item>(modelContainer: container)
-            if let items: [ItemViewModel] = try? await dataService.fetchData(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
+            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
+            if let items: [ItemViewModel] = try? await dataService.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
                 return items
             }
             return []

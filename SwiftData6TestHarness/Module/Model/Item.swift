@@ -8,6 +8,11 @@
 import Foundation
 import SwiftData
 
+protocol ConvertablePersistentModelProtocol: PersistentModel {
+    associatedtype ViewModel: Sendable
+    var viewModel: ViewModel { get }
+}
+
 @Model
 final class Item {
     @Attribute(.unique) var messageId: String
@@ -21,7 +26,7 @@ final class Item {
     }
 }
 
-extension Item {
+extension Item: ConvertablePersistentModelProtocol {
     var viewModel: ItemViewModel {
         return ItemViewModel(id: messageId, message: message, timestamp: timestamp)
     }
@@ -45,3 +50,4 @@ class PreviewController {
         }
     }()
 }
+

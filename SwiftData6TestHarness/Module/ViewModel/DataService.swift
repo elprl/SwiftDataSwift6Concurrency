@@ -9,18 +9,34 @@ import Foundation
 import SwiftData
 
 protocol DataServiceProtocol: ModelActor {
-    associatedtype Model: PersistentModel
-    associatedtype ViewModel: Sendable
+    associatedtype Model: ConvertablePersistentModelProtocol
+    func insert(data: Model) async
+    func fetchData(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [Model]
     func fetchDataIds(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier]
-    func save() async throws
     func remove(predicate: Predicate<Model>?) async throws
     func remove(id: PersistentIdentifier) async
-    
-    func fetchData(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [ViewModel]
+    func save() async throws
+    func saveAndInsertIfNeeded(data: Model, predicate: Predicate<Model>) async throws
+}
+
+protocol DataServiceVMProtocol: DataServiceProtocol {
+    associatedtype ViewModel: ConvertableViewModelProtocol
+    func fetchDataVMs(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [ViewModel]
     func insert(data: ViewModel) async
 }
 
 extension DataServiceProtocol {
+    func insert(data: Model) async {
+        modelContext.insert(data)
+        try? modelContext.save()
+    }
+    
+    func fetchData(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [Model] {
+        let fetchDescriptor = FetchDescriptor<Model>(predicate: predicate, sortBy: sortBy)
+        let list: [Model] = try modelContext.fetch(fetchDescriptor)
+        return list
+    }
+    
     func fetchDataIds(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [PersistentIdentifier] {
         let fetchDescriptor = FetchDescriptor<Model>(predicate: predicate, sortBy: sortBy)
         let list: [Model] = try modelContext.fetch(fetchDescriptor)
@@ -33,10 +49,6 @@ extension DataServiceProtocol {
         return count
     }
 
-    func save() async throws {
-        try modelContext.save()
-    }
-
     func remove(predicate: Predicate<Model>? = nil) async throws {
         try modelContext.delete(model: Model.self, where: predicate)
         try await save()
@@ -47,6 +59,10 @@ extension DataServiceProtocol {
             modelContext.delete(item)
         }
         try? modelContext.save()
+    }
+    
+    func save() async throws {
+        try modelContext.save()
     }
 
     func saveAndInsertIfNeeded(data: Model, predicate: Predicate<Model>) async throws {
@@ -64,7 +80,7 @@ extension DataServiceProtocol {
 ///  // It is important that this actor works as a mutex,
 ///  // so you must have one instance of the Actor for one container
 //   // for it to work correctly.
-///  let actor = BackgroundSerialPersistenceActor(container: modelContainer)
+///  let actor = DataService(container: modelContainer)
 ///
 ///  Task {
 ///      let data: [MyModel] = try? await actor.fetchData()
@@ -72,18 +88,18 @@ extension DataServiceProtocol {
 ///  ```
 @available(iOS 17, *)
 @ModelActor
-actor DataService<Model> where Model : PersistentModel {}
+actor DataService<Model, ViewModel> where Model: ConvertablePersistentModelProtocol, ViewModel: ConvertableViewModelProtocol {}
 
-extension DataService: DataServiceProtocol {
-    func fetchData(predicate: Predicate<Item>?, sortBy: [SortDescriptor<Item>]) async throws -> [ItemViewModel] {
-        let fetchDescriptor = FetchDescriptor<Item>(predicate: predicate, sortBy: sortBy)
-        let list: [Item] = try modelContext.fetch(fetchDescriptor)
-        return list.map({ $0.viewModel })
+extension DataService: DataServiceVMProtocol {
+    
+    func fetchDataVMs(predicate: Predicate<Model>?, sortBy: [SortDescriptor<Model>]) async throws -> [ViewModel] {
+        let fetchDescriptor = FetchDescriptor<Model>(predicate: predicate, sortBy: sortBy)
+        let list: [Model] = try modelContext.fetch(fetchDescriptor)
+        return list.map({ $0.viewModel as! ViewModel })
     }
     
-    func insert(data: ItemViewModel) async {
-        let data = Item(id: data.messageId, message: data.message, timestamp: data.timestamp)
-        modelContext.insert(data)
+    func insert(data: ViewModel) async {
+        modelContext.insert(data.model)
         try? modelContext.save()
     }
 }

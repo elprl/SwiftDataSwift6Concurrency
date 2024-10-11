@@ -13,7 +13,6 @@ struct ContentView: View {
     
     init(modelContext: ModelContext) {
         _viewModel = State(initialValue: ContentViewModel(modelContext: modelContext))
-        
     }
 
 #if DEBUG
@@ -26,22 +25,7 @@ struct ContentView: View {
         NavigationSplitView {
             List {
                 ForEach(viewModel.items) { item in
-                    NavigationLink {
-                        Text(item.message)
-                    } label: {
-                        VStack {
-                            Text(item.message)
-                                .font(.body)
-                                .foregroundStyle(.primary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                    .transition(.slide)
-                    .id(item.messageId)
+                    RowView(item: item)
                 }
                 .onDelete(perform: deleteItems)
             }
@@ -85,6 +69,30 @@ struct ContentView: View {
         Task {
             await viewModel.deleteItems(offsets: offsets)
         }
+    }
+}
+
+struct RowView: View {
+//    let item: Item
+    let item: ItemViewModel
+
+    var body: some View {
+        NavigationLink {
+            Text(item.message)
+        } label: {
+            VStack {
+                Text(item.message)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .transition(.slide)
+        .id(item.messageId)
     }
 }
 
