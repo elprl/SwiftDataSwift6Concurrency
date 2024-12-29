@@ -22,7 +22,7 @@ struct DataServiceTests {
             container.mainContext.insert(user)
         }
         try? container.mainContext.save()
-        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
+        let sut = DataService<Item, Item.Sender>(modelContainer: container)
         do {
             let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.count == count)
@@ -38,7 +38,7 @@ struct DataServiceTests {
         let user = Item(id: "\(1)", message: "Message \(1)")
         container.mainContext.insert(user)
         try? container.mainContext.save()
-        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
+        let sut = DataService<Item, Item.Sender>(modelContainer: container)
         do {
             await sut.remove(id: user.id)
             let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
@@ -55,7 +55,7 @@ struct DataServiceTests {
         let user = Item(id: "\(1)", message: "Message \(1)")
         container.mainContext.insert(user)
         try? container.mainContext.save()
-        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
+        let sut = DataService<Item, Item.Sender>(modelContainer: container)
         do {
             let t = user.timestamp
             try await sut.remove(predicate: #Predicate{ $0.timestamp == t })
@@ -70,10 +70,10 @@ struct DataServiceTests {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: Item.self, configurations: config)
 
-        let sut = DataService<Item, ItemViewModel>(modelContainer: container)
+        let sut = DataService<Item, Item.Sender>(modelContainer: container)
         do {
             let date = Date.now
-            await sut.insert(data: ItemViewModel(message: "Hello World", timestamp: date))
+            await sut.insert(data: Item.Sender(message: "Hello World", timestamp: date))
             let items = try await sut.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)])
             #expect(items.count == 1)
             #expect(items.first?.timestamp == date)

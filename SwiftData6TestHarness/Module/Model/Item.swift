@@ -22,8 +22,8 @@ final class Item {
 }
 
 extension Item: ConvertablePersistentModelProtocol {
-    var viewModel: ItemViewModel {
-        return ItemViewModel(id: messageId, message: message, timestamp: timestamp)
+    var viewModel: Item.Sender {
+        return Item.Sender(id: messageId, message: message, timestamp: timestamp)
     }
 }
 

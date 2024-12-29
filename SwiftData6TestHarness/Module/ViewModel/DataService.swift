@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 protocol ConvertablePersistentModelProtocol: PersistentModel {
-    associatedtype ViewModel: Sendable
+    associatedtype ViewModel: ConvertableViewModelProtocol
     var viewModel: ViewModel { get }
 }
 

@@ -74,7 +74,7 @@ struct ContentView: View {
 
 struct RowView: View {
 //    let item: Item
-    let item: ItemViewModel
+    let item: Item.Sender
 
     var body: some View {
         NavigationLink {
@@ -112,7 +112,7 @@ struct RowView: View {
 class PreviewVMController {
     static let previewContainer: ContentViewModel = {
         var vm = ContentViewModel(modelContext: nil)
-        vm.items = [ItemViewModel(id: UUID().uuidString, message: "Hello world", timestamp: Date.now)]
+        vm.items = [Item.Sender(id: UUID().uuidString, message: "Hello world", timestamp: Date.now)]
         return vm
     }()
 }

@@ -11,7 +11,7 @@ import SwiftUI
 
 @Observable
 final class ContentViewModel {
-    var items: [ItemViewModel] = [] // if using vm objects approach for cross-boundary sending
+    var items: [Item.Sender] = [] // if using vm objects approach for cross-boundary sending
 //    private(set) var items: [Item] = [] // if using ids approach for cross-boundary sending
     @ObservationIgnored private let modelContext: ModelContext?
     
@@ -24,8 +24,8 @@ final class ContentViewModel {
     func addItem(message: String, timestamp: Date = Date.now) async {
         guard let container = modelContext?.container else { return }
         let task = Task.detached {
-            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
-            await dataService.insert(data: ItemViewModel(id: UUID().uuidString, message: message, timestamp: timestamp))
+            let dataService = DataService<Item, Item.Sender>(modelContainer: container)
+            await dataService.insert(data: Item.Sender(id: UUID().uuidString, message: message, timestamp: timestamp))
         }
         await task.value
         await fetchData()
@@ -36,7 +36,7 @@ final class ContentViewModel {
         guard let container = modelContext?.container else { return }
         let delItems = offsets.compactMap({ items[safe: $0] })
         let task = Task.detached {
-            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
+            let dataService = DataService<Item, Item.Sender>(modelContainer: container)
             do {
                 for item in delItems {
                     let t = item.timestamp
@@ -54,7 +54,7 @@ final class ContentViewModel {
     func fetchDataByIds() async {
         guard let container = modelContext?.container else { return }
         let itemIds: [PersistentIdentifier] = await Task.detached {
-            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
+            let dataService = DataService<Item, Item.Sender>(modelContainer: container)
             if let itemIds: [PersistentIdentifier] = try? await dataService.fetchDataIds(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
                 return itemIds
             }
@@ -69,9 +69,9 @@ final class ContentViewModel {
     @MainActor
     func fetchData() async {
         guard let container = modelContext?.container else { return }
-        let vmItems: [ItemViewModel] = await Task.detached {
-            let dataService = DataService<Item, ItemViewModel>(modelContainer: container)
-            if let items: [ItemViewModel] = try? await dataService.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
+        let vmItems: [Item.Sender] = await Task.detached {
+            let dataService = DataService<Item, Item.Sender>(modelContainer: container)
+            if let items: [Item.Sender] = try? await dataService.fetchDataVMs(predicate: nil, sortBy: [SortDescriptor(\.timestamp)]) {
                 return items
             }
             return []

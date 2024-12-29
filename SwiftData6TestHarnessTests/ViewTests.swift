@@ -17,7 +17,7 @@ struct ViewTests {
     @MainActor @Test func listTest() async throws {
         let viewModel = ContentViewModel(modelContext: nil)
         let text = "Hello world"
-        viewModel.items = [ItemViewModel(message: text)]
+        viewModel.items = [Item.Sender(message: text)]
 
         let sut = ContentView(viewModel: viewModel)
 
